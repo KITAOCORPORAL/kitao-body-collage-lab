@@ -1,41 +1,40 @@
 # KBL Current Status
 
 Current version:
-v0.1.0
+v0.1.1
 
 Current stage:
-Stage E — PASS
+Stage F — PASS
 
 Release baseline:
-v0.1.0
+v0.1.1
 
-Last completed:
-Stage E validation, frozen data contracts, Project Reader, Manifest compatibility, diagnostics, Doctor, README, and release preparation.
+Current goal:
+One-click ComfyUI all-elements decomposition workflow
 
 Pipeline:
-GroundingDINO
-→ SAM2
-→ DWPose
-→ Body Splitter
+Florence-2 Scene Inventory
+→ SAM2 Universal Element Segmentation
+→ Background Filter / Deduplication
+→ Largest-Person DWPose / Body Splitter
 → Mask Refiner
 → Cutout Exporter
 
 Validation:
-- Stage B/C/D full real-photo regression: PASS
-- R1 simple full body: PASS
-- R2 bent arms near body: PASS
-- R3 / TEST C3 crossed legs: PASS
-- R4 4672×7008 original-coordinate person segmentation: PASS
-- Unit and compatibility tests: 35 / 35 PASS
-- KBL Doctor: READY
+- Stage B/C/D/E regression: PASS
+- Unit and compatibility tests: 50 / 50 PASS
+- Workflow graph validation: 5 / 5 PASS
+- Shared Input F1–F4 real inference: PASS
+- Real RGBA/source-RGB validation: 43 / 43 PASS
+- KBL Doctor: READY after deployment sync
 
 Known issues:
 - BiRefNet is optional and not installed
-- auto/hybrid remain experimental
-- advanced multi-person body splitting is not supported
+- Complex scenes may miss small or heavily occluded props
+- Body Split selects the largest person only
 
-Next:
-v0.2 Collage Board
+Next after v0.1.1:
+Real-world user testing and segmentation quality tuning
 
 Latest report:
-`handoff/reports/回传给GPT_Kitao_Body_Collage_Lab_v0.1_阶段E收尾报告.md`
+`handoff/reports/回传给GPT_Kitao_Body_Collage_Lab_v0.1.1_StageF_一键全元素拆解报告.md`

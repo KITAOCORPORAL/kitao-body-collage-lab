@@ -13,7 +13,7 @@ from Kitao_Body_Collage_Lab.version import KBL_MANIFEST_VERSION, KBL_VERSION
 
 class StageETests(unittest.TestCase):
     def test_version_is_single_release_source(self):
-        self.assertEqual(KBL_VERSION, "0.1.0")
+        self.assertEqual(KBL_VERSION, "0.1.1")
         self.assertEqual(KBL_MANIFEST_VERSION, "0.1")
         self.assertEqual(get_path_config()["version"], KBL_VERSION)
 

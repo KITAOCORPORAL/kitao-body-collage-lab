@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+from Kitao_Body_Collage_Lab.version import KBL_VERSION
 
 from Kitao_Body_Collage_Lab.nodes.export_nodes import (
     KBLCutoutExporter, category_folder, padded_crop_bbox, to_local_anchor,
@@ -79,7 +80,7 @@ class StageDTests(unittest.TestCase):
             root=Path(td); result=self._export(root); project=Path(result[0]); manifest=json.loads(Path(result[1]).read_text(encoding="utf-8"))
             self.assertEqual(result[3],2); self.assertEqual(result[4],2); self.assertFalse(manifest["diagnostics"]["models_rerun"])
             pipeline=json.loads((project/"pipeline_diagnostics.json").read_text(encoding="utf-8"))
-            self.assertEqual(pipeline["pipeline_version"],"0.1.0"); self.assertTrue(pipeline["validation"]["manifest_valid"])
+            self.assertEqual(pipeline["pipeline_version"], KBL_VERSION); self.assertTrue(pipeline["validation"]["manifest_valid"])
             self.assertIn("area_change_percent",pipeline["refine"][0])
             hand=next(x for x in manifest["body_parts"] if x["label"]=="left_hand")
             self.assertEqual(hand["quality_flag"],"uncertain"); self.assertEqual(hand["local_anchor"],to_local_anchor(hand["original_anchor"],hand["crop_origin"]))

@@ -26,9 +26,22 @@ MODEL_WEIGHT_FILES = ("model.safetensors", "pytorch_model.bin")
 
 def configure_local_caches(model_root):
     cache_root = Path(model_root).parent / ".cache"
-    os.environ.setdefault("HF_HOME", str(cache_root / "huggingface"))
-    os.environ.setdefault("TRANSFORMERS_CACHE", str(cache_root / "transformers"))
-    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ["HF_HOME"] = str(cache_root / "huggingface")
+    os.environ["HF_HUB_CACHE"] = str(cache_root / "huggingface" / "hub")
+    os.environ["TRANSFORMERS_CACHE"] = str(cache_root / "transformers")
+    os.environ["HF_HUB_OFFLINE"] = "1"
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
+    # Transformers caches trusted dynamic modules in a separately initialized
+    # constant; redirect that cache too, even when Transformers was imported
+    # before this backend is invoked.
+    try:
+        import transformers.dynamic_module_utils as dynamic_modules
+        import transformers.utils.hub as transformers_hub
+        modules_cache = str(cache_root / "huggingface" / "modules")
+        dynamic_modules.HF_MODULES_CACHE = modules_cache
+        transformers_hub.HF_MODULES_CACHE = modules_cache
+    except (ImportError, AttributeError):
+        pass
 
 
 def validate_model_directory(model_dir, model_name):
@@ -214,25 +227,28 @@ class Sam2Backend:
             dtype = _compute_dtype(device)
             guided = []
             if detections:
-                masks, scores = self._predict(
-                    processor,
-                    model,
-                    device,
-                    image,
-                    boxes=[item["bbox"] for item in detections],
-                )
-                for index, detection in enumerate(detections):
-                    best = int(torch.argmax(scores[index]).item())
-                    mask = masks[index, best].numpy().astype(bool)
-                    guided.append(
-                        {
-                            **detection,
-                            "mask": mask,
-                            "area": int(mask.sum()),
-                            "sam_score": float(scores[index, best]),
-                            "source": "guided",
-                        }
+                # Bound full-resolution post-processing memory while retaining
+                # a single loaded SAM2 instance for all boxes.
+                target_pixels = 120_000_000
+                chunk_size = max(1, min(16, target_pixels // max(1, image.width * image.height * 3)))
+                for start in range(0, len(detections), chunk_size):
+                    chunk = detections[start:start + chunk_size]
+                    masks, scores = self._predict(
+                        processor, model, device, image,
+                        boxes=[item["bbox"] for item in chunk],
                     )
+                    for index, detection in enumerate(chunk):
+                        best = int(torch.argmax(scores[index]).item())
+                        mask = masks[index, best].numpy().astype(bool)
+                        guided.append(
+                            {
+                                **detection,
+                                "mask": mask,
+                                "area": int(mask.sum()),
+                                "sam_score": float(scores[index, best]),
+                                "source": "guided",
+                            }
+                        )
             automatic = []
             if include_auto:
                 automatic = self._automatic_with_loaded_model(

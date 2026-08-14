@@ -15,6 +15,10 @@
 
 模型目录必须是完整 Transformers 本地仓库，不能只有 `.pt`。检查 `config.json`、预处理器/处理器配置、tokenizer（GroundingDINO）和 `model.safetensors` 是否直接位于报错给出的目录。
 
+## 提示缺少 Florence-2 或 Florence 加载失败
+
+运行 `scripts\model_integrity.py`，确认 `florence2` 目录同时包含配置、tokenizer、processor、`model.safetensors`、Microsoft 官方 `modeling_florence2.py` / `configuration_florence2.py` / `processing_florence2.py` 和 revision 记录。不要只复制权重，也不要为此升级整个 ComfyUI。生产推理必须 local-only；缓存应位于 N 盘。
+
 ## 提示缺少 DWPose 模型
 
 确认 `yolox_l.onnx` 与 `dw-ll_ucoco_384.onnx` 直接位于 `N:\Comfy-Desktop\ComfyUI-Shared\models\Kitao_Body_Collage_Lab\dwpose`。安装脚本会逐文件检查，不以空目录冒充完成。
@@ -25,7 +29,11 @@
 
 ## CUDA 显存不足
 
-先关闭其他模型工作流，降低 `max_detections` 和 `max_candidates`。KBL 会在 GroundingDINO 推理后释放其模型，再加载 SAM2；不会把两者永久驻留显存。
+先关闭其他模型工作流，降低 `max_elements`、`max_regions` 或旧工作流的 `max_detections`。KBL 按 Florence → GroundingDINO（仅 extra prompt）→ SAM2 → DWPose 的顺序释放模型，不会让它们长期同时驻留显存。
+
+## One-Click 漏掉小道具或出现背景块
+
+先使用 `complete`，并在 Advanced 工作流中提高 `max_regions`。Florence-2 负责对象清点，不保证识别每个极小或严重遮挡的道具；可用旧版 GroundingDINO `extra_prompt` 补充明确名词。未标注区域会保留为 `region_xxx.png`，但接触多边且占画面过大的候选会被背景过滤。建筑、桌子等明确语义对象即使较大也不会仅按面积删除。
 
 高分辨率图片的独立全尺寸 MASK 本身会占用大量内存。KBL 会按总 mask 像素量给 `max_candidates` 加安全上限，并在终端打印实际值；不会缩放最终 mask 或原图。
 

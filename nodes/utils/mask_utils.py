@@ -1,5 +1,6 @@
 """Independent-mask filtering and deduplication."""
 
+import re
 import numpy as np
 import torch
 
@@ -28,7 +29,9 @@ def deduplicate_elements(elements, iou_threshold, min_mask_area, max_candidates)
     eligible = [item for item in elements if int(item["area"]) >= int(min_mask_area)]
     eligible.sort(
         key=lambda item: (
+            bool(item.get("semantic")),
             item.get("source") == "guided",
+            float(item.get("sam_score", 0.0)),
             float(item.get("confidence", 0.0)),
             int(item.get("area", 0)),
         ),
@@ -56,6 +59,9 @@ def assign_element_ids(elements):
     counters = {}
     for item in elements:
         label = item["label"]
+        if re.fullmatch(r"(?:region|object)_\d{3}", label):
+            item["id"] = label
+            continue
         counters[label] = counters.get(label, 0) + 1
         item["id"] = f"{label}_{counters[label]:02d}"
     return elements

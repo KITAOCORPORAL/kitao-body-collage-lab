@@ -29,6 +29,20 @@ MODEL_REQUIREMENTS = {
         "directory": "dwpose",
         "files": ["yolox_l.onnx", "dw-ll_ucoco_384.onnx"],
     },
+    "Florence-2": {
+        "directory": "florence2",
+        "files": [
+            "config.json",
+            "preprocessor_config.json",
+            "tokenizer_config.json",
+            "tokenizer.json",
+            "model.safetensors",
+            "configuration_florence2.py",
+            "modeling_florence2.py",
+            "processing_florence2.py",
+            "kbl_model_revision.json",
+        ],
+    },
 }
 
 

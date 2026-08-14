@@ -1,4 +1,4 @@
-"""Explicit, real-image KBL v0.1.0 regression runner.
+"""Explicit, real-image KBL regression runner.
 
 The folder mode is deliberately non-recursive and never discovers directories on
 its own. Source images are not copied into diagnostics JSON.
@@ -172,7 +172,7 @@ def run_image(image_path, output_root, prefix="KBL_STAGE_E", person_only=False, 
 
 
 def _parse_args():
-    parser = argparse.ArgumentParser(description="Run KBL v0.1.0 regression on only explicitly supplied images.")
+    parser = argparse.ArgumentParser(description="Run KBL regression on only explicitly supplied images.")
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--image", help="Explicit image path")
     source.add_argument("--folder", help="Explicit folder; immediate image files only, never recursive")
