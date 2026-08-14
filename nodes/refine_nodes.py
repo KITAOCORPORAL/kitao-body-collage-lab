@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from ..version import KBL_VERSION
 from .utils.alpha_utils import mask_bbox, refine_binary_mask, soft_alpha_from_binary
 from .utils.image_io import comfy_image_to_pil
 from .utils.path_config import get_path_config
@@ -23,6 +24,7 @@ def _person_masks(elements):
 def _refine_item(item, kind, mode, person_masks, settings):
     raw = np.asarray(item["mask"], dtype=bool)
     raw_copy = raw.copy()
+    fallback_applied = False
     if mode == "none":
         binary = raw.copy()
     else:
@@ -35,6 +37,7 @@ def _refine_item(item, kind, mode, person_masks, settings):
         )
         raw_area = int(raw.sum())
         if raw_area and abs(int(binary.sum()) - raw_area) / raw_area > 0.20:
+            fallback_applied = True
             binary = refine_binary_mask(
                 raw,
                 expand_px=0, erode_px=settings["erode_px"],
@@ -55,6 +58,8 @@ def _refine_item(item, kind, mode, person_masks, settings):
             constraint = max(person_masks.values(), key=lambda value: int(value.sum()))
         if constraint is not None:
             alpha *= constraint.astype(np.float32)
+    area_change_percent = float((binary.sum() - raw.sum()) / max(1, raw.sum()) * 100.0)
+    warning = "REFINE_AREA_WARNING" if abs(area_change_percent) > 15.0 else None
     return {
         "id": item["id"],
         "label": item["label"],
@@ -67,6 +72,9 @@ def _refine_item(item, kind, mode, person_masks, settings):
         "raw_area": int(raw.sum()),
         "refined_area": int(binary.sum()),
         "area_change_ratio": float((binary.sum() - raw.sum()) / max(1, raw.sum())),
+        "area_change_percent": area_change_percent,
+        "fallback_applied": fallback_applied,
+        "warning": warning,
         "quality_flag": item.get("quality_flag", "ok"),
         "refine_mode": mode,
     }
@@ -112,17 +120,24 @@ class KBLMaskRefiner:
         expected = {"head", "torso", "left_upper_arm", "left_forearm", "left_hand", "right_upper_arm", "right_forearm", "right_hand", "left_thigh", "left_calf", "left_foot", "right_thigh", "right_calf", "right_foot"}
         body_labels = {item.get("label") for item in body_parts}
         result = {
-            "version": "0.1", "mode": refine_mode, "settings": settings,
+            "version": KBL_VERSION, "mode": refine_mode, "settings": settings,
             "records": records, "missing_body_parts": sorted(expected - body_labels),
             "image_size": [pil.width, pil.height], "birefnet_status": "NOT INSTALLED",
         }
         alpha_batch = torch.stack([torch.from_numpy(item["alpha_mask"]) for item in records]) if records else torch.zeros((1, pil.height, pil.width), dtype=torch.float32)
         preview_records = [{"id": item["id"], "mask": item["binary_mask"], "area": item["refined_area"]} for item in records]
+        warnings = [
+            {"id": item["id"], "warning": item["warning"], "area_change_percent": item["area_change_percent"]}
+            for item in records if item["warning"]
+        ]
         diagnostics = {
             "mode": refine_mode, "record_count": len(records),
             "raw_area_total": sum(item["raw_area"] for item in records),
             "refined_area_total": sum(item["refined_area"] for item in records),
             "max_abs_area_change_ratio": max((abs(item["area_change_ratio"]) for item in records), default=0.0),
+            "max_abs_area_change_percent": max((abs(item["area_change_percent"]) for item in records), default=0.0),
+            "area_warnings": warnings,
+            "fallback_count": sum(1 for item in records if item["fallback_applied"]),
             "missing_body_parts": result["missing_body_parts"], "raw_masks_preserved": True,
             "birefnet": "NOT INSTALLED",
         }

@@ -47,7 +47,7 @@
 
 ## BiRefNet 显示 NOT INSTALLED
 
-阶段 D 的 BiRefNet 仅为实验接口，不是主流程依赖。选择 `safe` 或 `soft` 即可完成精修和导出；选择 `birefnet` 时节点会明确报错，不会伪装成已执行。
+v0.1.0 的 BiRefNet 仅为实验接口，不是主流程依赖。选择 `safe` 或 `soft` 即可完成精修和导出；选择 `birefnet` 时节点会明确报错，不会伪装成已执行。
 
 ## Manifest validator FAILED
 

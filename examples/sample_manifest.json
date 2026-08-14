@@ -1,6 +1,6 @@
 {
   "manifest_version": "0.1",
-  "pipeline_version": "0.1",
+  "pipeline_version": "0.1.0",
   "project_name": "sample_project",
   "created_at": "2026-08-14T00:00:00+00:00",
   "source": {
@@ -10,7 +10,21 @@
     "sha256": ""
   },
   "image": {"width": 1080, "height": 1440, "format": "JPEG", "orientation": 1, "color_mode": "RGB"},
-  "elements": [],
+  "elements": [
+    {
+      "id": "element_flower_01", "label": "flower", "category": "plants",
+      "file": "elements/plants/plant_flower_01.png", "raw_mask_file": "masks/raw/flower_01.png",
+      "refined_mask_file": "masks/refined/flower_01.png", "alpha_mask_file": "masks/alpha/flower_01.png",
+      "original_bbox": [64, 200, 224, 420], "content_bbox": [64, 200, 224, 420],
+      "crop_bbox": [40, 176, 248, 444], "crop_origin": [40, 176],
+      "area": 18200, "raw_area": 18200, "refined_area": 18410, "area_change_percent": 1.1538,
+      "confidence": 0.88, "pose_confidence": 0.88, "sam_score": 0.94,
+      "quality_flag": "ok", "source_person_id": null,
+      "original_anchor": [144, 310], "local_anchor": [104, 134], "orientation_deg": 0.0,
+      "joint_start": null, "joint_end": null, "source": "guided",
+      "mask": "masks/raw/flower_01.png", "bbox": [64, 200, 224, 420], "original_position": [144, 310]
+    }
+  ],
   "body_parts": [
     {
       "id": "body_left_forearm", "label": "left_forearm", "category": "body",
@@ -18,7 +32,8 @@
       "refined_mask_file": "masks/refined/body_left_forearm.png", "alpha_mask_file": "masks/alpha/body_left_forearm.png",
       "original_bbox": [496, 729, 551, 835], "content_bbox": [495, 728, 552, 836],
       "crop_bbox": [471, 704, 576, 860], "crop_origin": [471, 704],
-      "area": 2667, "confidence": 0.797, "pose_confidence": 0.797, "sam_score": 0.902,
+      "area": 2667, "raw_area": 2667, "refined_area": 2812, "area_change_percent": 5.4368,
+      "confidence": 0.797, "pose_confidence": 0.797, "sam_score": 0.902,
       "quality_flag": "ok", "source_person_id": "person_01",
       "original_anchor": [500, 730], "local_anchor": [29, 26], "orientation_deg": 110.56,
       "joint_start": [537, 728], "joint_end": [501, 825], "source": "dwpose+sam2"

@@ -4,7 +4,7 @@
 
 加载 `workflows/Kitao_Body_Collage_Lab_v0.1_element_detection.json`，在 `KBL 加载图片` 填写 JPG/JPEG/PNG/WEBP 绝对路径。
 
-`KBL 元素检测与分割` 提供三种模式，v0.1 默认 `guided`：
+`KBL 元素检测与分割` 提供三种模式，v0.1.0 默认 `guided`：
 
 - `guided`：GroundingDINO 文本检测 bbox，再由 SAM2 切分。
 - `auto`：SAM2 使用规则点网格提出候选 mask，不加载 GroundingDINO。
@@ -34,7 +34,22 @@
 
 ## Mask 精修与素材包导出
 
-加载 `workflows/Kitao_Body_Collage_Lab_v0.1_full_export.json`。`safe` 清理小孔、小岛并执行有限 closing/expand；单个 mask 若相对面积漂移超过 20%，自动撤销 expand。`soft` 保留同一 binary mask，只在边界 band 生成 0–1 alpha。raw mask 永远保留，body binary/alpha 永远受原 person mask 约束。
+加载 `workflows/Kitao_Body_Collage_Lab_v0.1_full_export.json`。`safe` 清理小孔、小岛并执行有限 closing/expand；单个 mask 若初次相对面积漂移超过 20%，自动撤销 expand。最终变化绝对值超过 15% 时，`pipeline_diagnostics.json` 会记录 `REFINE_AREA_WARNING`。`soft` 保留同一 binary mask，只在边界 band 生成 0–1 alpha。raw mask 永远保留，body binary/alpha 永远受原 person mask 约束。
+
+真实照片回归只处理明确给出的图片或文件夹；文件夹模式不递归，也不会扫描其他磁盘：
+
+```powershell
+python scripts\regression_test.py --image "N:\明确路径\sample.jpg"
+python scripts\regression_test.py --folder "N:\明确目录"
+python scripts\regression_test.py --cross-leg-image "N:\明确路径\cross_leg.jpg"
+```
+
+读取已经导出的 KBL Project 不会运行任何模型：
+
+```python
+from Kitao_Body_Collage_Lab.nodes.utils.project_reader import load_kbl_project
+project = load_kbl_project(r"N:\ComfyUI\output\Kitao_Body_Collage_Lab\PROJECT")
+```
 
 Exporter 默认 `all + cropped + padding 24 + version`。每个对象逐一裁切、写 RGBA 后释放临时图像，不会同时构造全部 full-canvas RGBA。项目内部路径写为相对路径，cropped 素材保存 `crop_origin`、`original_anchor` 与 `local_anchor`。Exporter 不加载 GroundingDINO、SAM2 或 DWPose。
 

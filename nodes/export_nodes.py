@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+from ..version import KBL_VERSION
 from .utils.alpha_utils import mask_bbox
 from .utils.image_io import comfy_image_to_pil, pil_to_comfy_image
 from .utils.manifest_utils import KBL_MANIFEST_VERSION, validate_manifest
@@ -206,7 +207,9 @@ def _write_asset(source, temp_root, kind, item, refined, crop_mode, padding, sav
         "full_canvas_file":full_canvas_file,"raw_mask_file":raw_path.as_posix() if raw_path else None,
         "refined_mask_file":refined_path.as_posix() if refined_path else None,"alpha_mask_file":alpha_path.as_posix() if alpha_path else None,
         "original_bbox":[float(v) for v in item["bbox"]],"content_bbox":content_bbox,"crop_bbox":crop_bbox,"crop_origin":[x1,y1],
-        "area":int(raw.sum()),"refined_area":int(binary.sum()),"confidence":float(item.get("confidence",0.0)),
+        "area":int(raw.sum()),"raw_area":int(raw.sum()),"refined_area":int(binary.sum()),
+        "area_change_percent":float((binary.sum()-raw.sum())/max(1,raw.sum())*100.0),
+        "confidence":float(item.get("confidence",0.0)),
         "pose_confidence":float(item.get("pose_confidence",item.get("confidence",0.0))),"sam_score":float(item.get("sam_score",0.0)),
         "quality_flag":item.get("quality_flag","ok"),"source_person_id":item.get("source_person_id"),
         "original_anchor":original_anchor,"local_anchor":local_anchor,"orientation_deg":float(item.get("orientation_deg",0.0)),
@@ -286,13 +289,26 @@ class KBLCutoutExporter:
                 overview.save(temp/"preview/overview.png"); body_overview.save(temp/"preview/body_parts_preview.png")
                 masks.save(temp/"preview/mask_sheet.png"); contact.save(temp/"preview/contact_sheet.png")
             if save_exploded_view: exploded.save(temp/"preview/exploded_view.png")
+            person_masks=[np.asarray(item["mask"],dtype=bool) for item in elements if item.get("label")=="person"]
+            person_mask=max(person_masks,key=lambda value:int(value.sum())) if person_masks else None
+            body_subset_person=all(not np.any(np.asarray(item["mask"],dtype=bool)&~person_mask) for item in body_parts) if person_mask is not None else not body_parts
+            overlap_after=int((np.stack([np.asarray(item["mask"],dtype=bool) for item in body_parts]).sum(axis=0)>1).sum()) if body_parts else 0
+            pipeline_diagnostics={
+                "pipeline_version":KBL_VERSION,
+                "source":meta.get("filename",source_path.name if source_path else "original.png"),
+                "resolution":[width,height],
+                "timings":{"grounding_dino":0.0,"sam2":0.0,"dwpose":0.0,"body_split":0.0,"refine":0.0,"export":0.0,"total":0.0},
+                "counts":{"elements":len(manifest_elements),"body_parts":len(manifest_body),"missing_parts":len(refined_masks.get("missing_body_parts",[])),"uncertain_parts":sum(1 for item in manifest_body if item.get("quality_flag")!="ok")},
+                "validation":{"body_subset_person":body_subset_person,"overlap_after":overlap_after,"manifest_valid":False},
+                "refine":[{"id":item["id"],"raw_area":item["raw_area"],"refined_area":item["refined_area"],"area_change_percent":item["area_change_percent"],"warning":"REFINE_AREA_WARNING" if abs(item["area_change_percent"])>15.0 else None} for item in all_entries],
+            }
             manifest={
-                "manifest_version":KBL_MANIFEST_VERSION,"pipeline_version":"0.1","project_name":final.name,
+                "manifest_version":KBL_MANIFEST_VERSION,"pipeline_version":KBL_VERSION,"project_name":final.name,
                 "created_at":datetime.now(timezone.utc).isoformat(),
                 "source":{"filename":meta.get("filename",source_path.name if source_path else "original.png"),"source_path":str(source_path) if source_path else None,"copied_source_path":copied.as_posix() if copied else None,"sha256":_sha256(hash_path)},
                 "image":{"width":width,"height":height,"format":meta.get("format",source_path.suffix.lstrip(".").upper() if source_path else "PNG"),"orientation":meta.get("orientation",1),"color_mode":"RGB"},
                 "elements":manifest_elements,"body_parts":manifest_body,
-                "diagnostics":{"export_scope":export_scope,"crop_mode":crop_mode,"padding":int(padding),"body_exported_count":len(manifest_body),"element_exported_count":len(manifest_elements),"missing_body_parts":refined_masks.get("missing_body_parts",[]),"birefnet":refined_masks.get("birefnet_status","NOT INSTALLED"),"models_rerun":False},
+                "diagnostics":{"export_scope":export_scope,"crop_mode":crop_mode,"padding":int(padding),"body_exported_count":len(manifest_body),"element_exported_count":len(manifest_elements),"missing_body_parts":refined_masks.get("missing_body_parts",[]),"birefnet":refined_masks.get("birefnet_status","NOT INSTALLED"),"models_rerun":False,"pipeline_diagnostics_file":"pipeline_diagnostics.json"},
                 "export_complete":True,
             }
             validator={"status":"NOT_REQUESTED","errors":[],"checked_assets":0}
@@ -301,6 +317,8 @@ class KBLCutoutExporter:
                 manifest_file.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
                 validator=validate_manifest(manifest_file)
                 if validator["status"]!="PASS": raise RuntimeError("KBL manifest validator FAILED: "+"; ".join(validator["errors"]))
+            pipeline_diagnostics["validation"]["manifest_valid"]=validator["status"]=="PASS"
+            (temp/"pipeline_diagnostics.json").write_text(json.dumps(pipeline_diagnostics,ensure_ascii=False,indent=2),encoding="utf-8")
             if final.exists():
                 backup=root/f".{final.name}.kbl_backup_{uuid.uuid4().hex}"; os.replace(final,backup)
             os.replace(temp,final)

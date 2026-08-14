@@ -1,4 +1,4 @@
-# 安装说明（阶段 D）
+# 安装说明（KBL v0.1.0）
 
 ## 1. 项目位置
 
@@ -22,7 +22,7 @@ N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\custom_nodes\Kitao_Body_Collage_Lab
 & 'N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\custom_nodes\Kitao_Body_Collage_Lab\scripts\install_dependencies.ps1'
 ```
 
-脚本只调用该 ComfyUI 实例自己的 `.venv`，不会使用系统 Python。阶段 D safe/soft 精修与 PNG/Manifest 导出只使用现有 NumPy、OpenCV、Pillow 和标准库，不新增依赖，也不会升级 Torch、CUDA 或 ONNX Runtime。
+脚本只调用该 ComfyUI 实例自己的 `.venv`，不会使用系统 Python。v0.1.0 safe/soft 精修与 PNG/Manifest 导出只使用现有 NumPy、OpenCV、Pillow 和标准库，不新增依赖，也不会升级 Torch、CUDA 或 ONNX Runtime。
 
 ## 3. 模型目录
 
@@ -104,3 +104,9 @@ workflows\Kitao_Body_Collage_Lab_v0.1_full_export.json
 ```
 
 把输入路径、项目名与导出根目录改成所需值。默认使用 `guided`、`standard`、`safe`、`all`、`cropped`、24px padding 和 `version` 覆盖策略。
+
+完成后可运行统一检查：
+
+```powershell
+& 'N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\.venv\Scripts\python.exe' scripts\kbl_doctor.py
+```

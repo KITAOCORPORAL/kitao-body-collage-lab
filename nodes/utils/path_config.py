@@ -3,7 +3,8 @@
 import os
 from pathlib import Path
 
-PIPELINE_VERSION = "0.1.0-stage-d"
+from ...version import KBL_VERSION
+
 DEFAULT_N_ROOT = Path("N:/ComfyUI")
 DESKTOP_SHARED_MODELS = Path("N:/Comfy-Desktop/ComfyUI-Shared/models")
 
@@ -29,7 +30,7 @@ def get_path_config():
         [DEFAULT_N_ROOT / "output" / "Kitao_Body_Collage_Lab"],
     )
     return {
-        "version": PIPELINE_VERSION,
+        "version": KBL_VERSION,
         "model_root": str(model_root),
         "export_root": str(export_root),
     }

@@ -1,6 +1,7 @@
 """GroundingDINO + SAM2 high-level element detector."""
 
 import json
+import time
 from pathlib import Path
 
 from .model_backends import GroundingDinoBackend, Sam2Backend
@@ -52,6 +53,7 @@ class KBLElementDetector:
     def __init__(self):
         self.dino_backend_class = GroundingDinoBackend
         self.sam_backend_class = Sam2Backend
+        self.last_timings = {"grounding_dino": 0.0, "sam2": 0.0}
 
     def detect(
         self,
@@ -81,12 +83,18 @@ class KBLElementDetector:
         if detection_mode in {"guided", "hybrid"}:
             prompt = resolve_prompt(category_preset, text_prompt_override)
             dino = self.dino_backend_class(model_root / "grounding_dino", confidence_threshold)
+            started = time.perf_counter()
             detections = dino.detect(pil_image, prompt, max_detections)
+            self.last_timings["grounding_dino"] = time.perf_counter() - started
+        else:
+            self.last_timings["grounding_dino"] = 0.0
 
         if detection_mode == "guided" and not detections:
             guided, automatic = [], []
+            self.last_timings["sam2"] = 0.0
         else:
             sam = self.sam_backend_class(model_root / "sam2")
+            started = time.perf_counter()
             guided, automatic = sam.segment(
                 pil_image,
                 detections if detection_mode in {"guided", "hybrid"} else [],
@@ -94,6 +102,7 @@ class KBLElementDetector:
                 effective_max_candidates,
                 min_mask_area,
             )
+            self.last_timings["sam2"] = time.perf_counter() - started
         candidates = guided + automatic
         elements = deduplicate_elements(
             candidates,

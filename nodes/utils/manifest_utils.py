@@ -7,7 +7,30 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-KBL_MANIFEST_VERSION = "0.1"
+from ...version import KBL_MANIFEST_VERSION
+
+
+def load_manifest_data(manifest_path):
+    """Read a KBL manifest without loading models or image pixels."""
+    return json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+
+
+def validate_manifest_schema(manifest):
+    """Validate the frozen v0.1 structure independently of project files."""
+    errors = []
+    for key in ("manifest_version", "pipeline_version", "project_name", "source", "image", "elements", "body_parts", "diagnostics", "export_complete"):
+        if key not in manifest:
+            errors.append(f"缺少顶层字段：{key}")
+    if manifest.get("manifest_version") != KBL_MANIFEST_VERSION:
+        errors.append(f"manifest_version 必须为 {KBL_MANIFEST_VERSION}")
+    if not isinstance(manifest.get("source"), dict):
+        errors.append("source 必须是 object")
+    if not isinstance(manifest.get("image"), dict):
+        errors.append("image 必须是 object")
+    for collection in ("elements", "body_parts"):
+        if not isinstance(manifest.get(collection), list):
+            errors.append(f"{collection} 必须是 array")
+    return errors
 
 
 def relative_posix(path, root):
@@ -28,14 +51,10 @@ def validate_manifest(manifest_path):
     root = path.parent
     errors = []
     try:
-        manifest = json.loads(path.read_text(encoding="utf-8"))
+        manifest = load_manifest_data(path)
     except Exception as exc:
         return {"status": "FAILED", "errors": [f"JSON 无法解析：{exc}"], "checked_assets": 0}
-    for key in ("manifest_version", "pipeline_version", "project_name", "source", "image", "elements", "body_parts", "diagnostics", "export_complete"):
-        if key not in manifest:
-            errors.append(f"缺少顶层字段：{key}")
-    if manifest.get("manifest_version") != KBL_MANIFEST_VERSION:
-        errors.append("manifest_version 必须为 0.1")
+    errors.extend(validate_manifest_schema(manifest))
     if manifest.get("export_complete") is not True:
         errors.append("export_complete 不是 true")
     image_meta = manifest.get("image", {})
