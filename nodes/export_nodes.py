@@ -25,7 +25,7 @@ CATEGORY_FOLDERS = {
     "flower": "plants", "plant": "plants",
     "bag": "props", "glass": "props", "mirror": "props", "rope": "props", "jewelry": "props",
 }
-CATEGORY_PREFIXES = {"person": "person", "clothing": "clothing", "furniture": "furniture", "plants": "plant", "props": "prop", "other": "element"}
+CATEGORY_PREFIXES = {"person": "person", "clothing": "clothing", "furniture": "furniture", "plants": "plant", "props": "prop", "other": "element", "unlabeled": "region"}
 BODY_ORDER = [
     "head", "left_upper_arm", "left_forearm", "left_hand", "right_upper_arm", "right_forearm", "right_hand",
     "torso", "left_thigh", "left_calf", "left_foot", "right_thigh", "right_calf", "right_foot",
@@ -52,6 +52,8 @@ def category_folder(item):
     for token in ("person", "clothing", "shoe", "chair", "table", "flower", "plant", "bag", "glass", "mirror", "rope", "jewelry"):
         if token in tokens:
             return CATEGORY_FOLDERS[token]
+    if not item.get("semantic", True) or label.startswith("region_"):
+        return "unlabeled"
     return category if category in CATEGORY_PREFIXES else "other"
 
 
@@ -140,7 +142,10 @@ def _asset_sheet(root, entries, title, columns=4, tile=300):
         sheet.paste(asset,(x,y),asset)
         with Image.open(root / item["file"]) as dimensions:
             width,height=dimensions.size
-        draw.text((x0+10,y0+tile-36),f"{item['label'].upper()}  {width}x{height}",fill="white",font=font)
+        source=str(item.get("discovery_source",item.get("source","unknown"))).replace("florence_", "Florence ")
+        quality=str(item.get("quality_flag","ok")).upper()
+        draw.text((x0+10,y0+tile-39),f"{item['label'].upper()}  {width}x{height}",fill="white",font=font)
+        draw.text((x0+10,y0+tile-24),f"{source} + SAM2 | {quality}",fill="#b9c3c9",font=font)
     return sheet
 
 
@@ -158,7 +163,7 @@ def _mask_sheet(records, columns=4, tile=240):
 
 def _element_filename(item, folder):
     safe_id = re.sub(r"[^A-Za-z0-9_-]+", "_", str(item.get("id", "auto_01"))).strip("_") or "auto_01"
-    return f"{CATEGORY_PREFIXES[folder]}_{safe_id}.png"
+    return f"{safe_id[:96]}.png"
 
 
 def _anchor(item):
@@ -216,6 +221,7 @@ def _write_asset(source, temp_root, kind, item, refined, crop_mode, padding, sav
         "joint_start":item.get("joint_start"),"joint_end":item.get("joint_end"),"source":item.get("source","unknown"),
     }
     if kind=="element":
+        record.update({key:item.get(key) for key in ("raw_label","canonical_label","discovery_source","semantic") if key in item})
         record["mask"]=record["raw_mask_file"]; record["bbox"]=record["original_bbox"]
         record["original_position"]=[(record["original_bbox"][0]+record["original_bbox"][2])/2,(record["original_bbox"][1]+record["original_bbox"][3])/2]
     return record
@@ -238,8 +244,8 @@ class KBLCutoutExporter:
             "overwrite_policy": (["version","replace","skip"], {"default":"version"}),
             "min_export_area": ("INT", {"default":64,"min":0,"max":1000000}),
         }}
-    RETURN_TYPES=("STRING","STRING","INT","INT","INT","IMAGE","STRING")
-    RETURN_NAMES=("project_directory","manifest_path","exported_count","body_exported_count","element_exported_count","preview","diagnostics")
+    RETURN_TYPES=("STRING","STRING","INT","INT","INT","IMAGE","STRING","IMAGE")
+    RETURN_NAMES=("project_directory","manifest_path","exported_count","body_exported_count","element_exported_count","preview","diagnostics","exploded_view")
     FUNCTION="export"; CATEGORY="Kitao Body Collage/导出"; OUTPUT_NODE=True
 
     def export(self,image,image_meta,elements,body_parts,refined_masks,project_name,export_root,export_scope,copy_source,save_raw_masks,save_refined_masks,save_preview,save_exploded_view,save_manifest,crop_mode,padding,overwrite_policy,min_export_area):
@@ -250,7 +256,7 @@ class KBLCutoutExporter:
         final=_choose_project_path(root,project_name,overwrite_policy); temp=root/f".{final.name}.kbl_tmp_{uuid.uuid4().hex}"
         backup=None
         try:
-            for directory in ("source","body","elements/person","elements/clothing","elements/props","elements/furniture","elements/plants","elements/other","masks/raw","masks/refined","masks/alpha","preview"):
+            for directory in ("source","body","elements/person","elements/clothing","elements/props","elements/furniture","elements/plants","elements/other","elements/unlabeled","masks/raw","masks/refined","masks/alpha","preview"):
                 (temp/directory).mkdir(parents=True,exist_ok=True)
             try: meta=json.loads(image_meta) if image_meta else {}
             except json.JSONDecodeError as exc: raise ValueError(f"image_meta 不是合法 JSON：{exc}") from exc
@@ -326,7 +332,7 @@ class KBLCutoutExporter:
             manifest_path=str(final/"manifest.json") if save_manifest else ""
             diagnostics={"status":"PASS","validator":validator,"project":str(final),"exported_count":len(all_entries),"models_rerun":False}
             print(f"[KBL Export]\nProject:\n{final}\nBody parts:\n{len(manifest_body)}\nElements:\n{len(manifest_elements)}\nOutput:\n{final}\nManifest:\n{manifest_path}")
-            return str(final),manifest_path,len(all_entries),len(manifest_body),len(manifest_elements),pil_to_comfy_image(contact),json.dumps(diagnostics,ensure_ascii=False)
+            return str(final),manifest_path,len(all_entries),len(manifest_body),len(manifest_elements),pil_to_comfy_image(contact),json.dumps(diagnostics,ensure_ascii=False),pil_to_comfy_image(exploded)
         except Exception:
             if temp.exists(): shutil.rmtree(temp)
             if backup and backup.exists() and not final.exists(): os.replace(backup,final)

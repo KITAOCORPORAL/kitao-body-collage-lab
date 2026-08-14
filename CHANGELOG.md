@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.1
+
+### Added
+
+- Local-only Florence-2 scene inventory with OD, dense caption, region proposal, and caption grounding
+- `KBL_Load_Image_Picker`, `KBL_Scene_Inventory`, `KBL_Universal_Element_Detector`, and `KBL_OneClick_Decompose_Export`
+- Semantic-first deduplication, background-like region filtering, unknown-region preservation, and Windows-safe asset names
+- One-click and advanced all-elements ComfyUI workflows
+- Scene inventory preview, all-elements Contact Sheet, Exploded View, and Stage F diagnostics
+- Automatic largest-person body routing while preserving every detected person as a generic layer
+
+### Validation
+
+- 50/50 unit and compatibility tests: PASS
+- Four Shared Input real-scene runs: PASS
+- 43/43 exported assets: RGBA, transparent, and source-RGB exact where alpha is nonzero
+- Florence-2 peak CUDA allocation: 717,854,208 bytes on RTX 5060 Ti 16 GB
+- Legacy Stage B/C/D/E real-photo regression and Manifest validator: PASS
+
+### Known limitations
+
+- Small, occluded props can still be missed in cluttered scenes; Advanced workflow and `extra_prompt` remain the tuning path.
+- Multiple people are exported independently, but body splitting still targets the largest person only.
+
 ## 0.1.0
 
 ### Added

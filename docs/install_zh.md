@@ -1,4 +1,4 @@
-# 安装说明（KBL v0.1.0）
+# 安装说明（KBL v0.1.1）
 
 ## 1. 项目位置
 
@@ -33,6 +33,7 @@ N:\Comfy-Desktop\ComfyUI-Shared\models\Kitao_Body_Collage_Lab\
 ├─ sam2\
 ├─ grounding_dino\
 ├─ dwpose\
+├─ florence2\
 └─ birefnet\
 ```
 
@@ -41,6 +42,7 @@ N:\Comfy-Desktop\ComfyUI-Shared\models\Kitao_Body_Collage_Lab\
 - GroundingDINO：`IDEA-Research/grounding-dino-tiny`
 - SAM2：`facebook/sam2.1-hiera-small`
 - DWPose：`yzd-v/DWPose`（只取 `yolox_l.onnx` 与 `dw-ll_ucoco_384.onnx`）
+- Florence-2：`microsoft/Florence-2-base-ft`，固定 revision `f6c1a25888ffc1d945ee8a1a77ac833c7303d46e`
 
 必须手动把完整仓库文件放到对应目录根部，不要只放 `.pt`：
 
@@ -65,6 +67,8 @@ N:\Comfy-Desktop\ComfyUI-Shared\models\Kitao_Body_Collage_Lab\dwpose\
 ```
 
 KBL 调用 `from_pretrained(..., local_files_only=True)`，并设置离线模式，不会静默下载。若用户自行使用 Hugging Face CLI 下载，请显式指定上述 N 盘 `--local-dir`。
+
+Florence-2 在当前 Transformers 5.8 环境使用 Microsoft 官方固定 revision 中的本地模型代码。安装后生产推理始终 `local_files_only`；动态模块缓存、HF cache 和 Transformers cache 都固定在 N 盘。不要单独升级 Torch、CUDA 或 Transformers。
 
 也可关闭 Comfy Desktop 后运行一键安装：
 
@@ -100,10 +104,10 @@ $env:KBL_EXPORT_ROOT = 'N:\ComfyUI\output\Kitao_Body_Collage_Lab'
 重启 Comfy Desktop，加载：
 
 ```text
-workflows\Kitao_Body_Collage_Lab_v0.1_full_export.json
+workflows\Kitao_Body_Collage_Lab_v0.1.1_ONE_CLICK_ALL_ELEMENTS.json
 ```
 
-把输入路径、项目名与导出根目录改成所需值。默认使用 `guided`、`standard`、`safe`、`all`、`cropped`、24px padding 和 `version` 覆盖策略。
+在 `KBL 选择图片` 节点选择或上传图片。默认使用 `complete`、身体部件开启、保留未标注 Region Proposal、24px padding 和 `version` 覆盖策略。
 
 完成后可运行统一检查：
 

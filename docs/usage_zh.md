@@ -1,5 +1,21 @@
 # 使用说明
 
+## 0.1.1 一键全元素工作流
+
+普通用户加载 `workflows/Kitao_Body_Collage_Lab_v0.1.1_ONE_CLICK_ALL_ELEMENTS.json`。在 `KBL 选择图片` 节点点击上传/选择图片，然后运行队列；不需要填写绝对路径，也不需要预先描述图片内容。
+
+默认 `complete` 会依次运行 Florence-2 OD、Dense Region Caption、Region Proposal、SAM2、背景过滤、去重、人物路由、Mask Refiner 和 Exporter。检测到人物时，默认只对最大人物执行 14 部位拆分；多人仍会分别导出 `person_01.png`、`person_02.png`。无人场景不会调用 DWPose，也不会报错。
+
+输出项目位于 `N:\ComfyUI\output\Kitao_Body_Collage_Lab\`，包含透明 RGBA、原始/精修/alpha mask、`scene_inventory_preview.png`、Contact Sheet、Exploded View、Manifest 0.1 和 `pipeline_diagnostics.json`。PNG 的有效 RGB 直接来自源照片，只修改 alpha，不生成或重画对象。
+
+质量模式：
+
+- `fast`：Florence OD → SAM2 → Export，不拆身体部位。
+- `balanced`：OD + Dense Caption → SAM2 → 可选身体拆分 → Export。
+- `complete`：再加入 Region Proposal、背景过滤和去重，默认推荐。
+
+需要逐节点调参时加载 `workflows/Kitao_Body_Collage_Lab_v0.1.1_ALL_ELEMENTS_ADVANCED.json`。旧版 `KBL 加载图片` 绝对路径入口和 v0.1 工作流继续保留。
+
 ## 元素检测工作流
 
 加载 `workflows/Kitao_Body_Collage_Lab_v0.1_element_detection.json`，在 `KBL 加载图片` 填写 JPG/JPEG/PNG/WEBP 绝对路径。

@@ -1,4 +1,4 @@
-"""Unified release-readiness checks for KBL v0.1.0."""
+"""Unified release-readiness checks for KBL v0.1.1."""
 
 import argparse
 import json
@@ -72,7 +72,7 @@ def run_doctor():
     deployed_version = deployment / "version.py"
     deployment_ok = (deployment / "__init__.py").is_file() and deployed_version.is_file() and f'KBL_VERSION = "{KBL_VERSION}"' in deployed_version.read_text(encoding="utf-8")
     checks["ComfyUI custom node deployment"] = {"status": "PASS" if deployment_ok else "FAILED", "detail": str(deployment)}
-    mandatory = ["Python", "Torch", "CUDA", "GroundingDINO", "SAM2", "DWPose", "Output directory", "ComfyUI custom node deployment"]
+    mandatory = ["Python", "Torch", "CUDA", "GroundingDINO", "SAM2", "DWPose", "Florence-2", "Output directory", "ComfyUI custom node deployment"]
     overall = "READY" if all(checks[name]["status"] == "PASS" for name in mandatory) else "NOT READY"
     return {"kbl_version": KBL_VERSION, "checks": checks, "overall": overall}
 

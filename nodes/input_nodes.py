@@ -31,5 +31,35 @@ class KBLLoadImage:
             meta["filename"],
         )
 
-NODE_CLASS_MAPPINGS = {"KBL_Load_Image": KBLLoadImage}
-NODE_DISPLAY_NAME_MAPPINGS = {"KBL_Load_Image": "KBL 加载图片"}
+
+class KBLLoadImagePicker:
+    """Use the exact upload/input selection protocol of the installed ComfyUI."""
+    @classmethod
+    def INPUT_TYPES(cls):
+        import folder_paths
+        input_dir = folder_paths.get_input_directory()
+        files = [name for name in folder_paths.recursive_search(input_dir)[0]]
+        return {"required": {"image": (sorted(files), {"image_upload": True})}}
+
+    RETURN_TYPES = KBLLoadImage.RETURN_TYPES
+    RETURN_NAMES = KBLLoadImage.RETURN_NAMES
+    FUNCTION = "load"
+    CATEGORY = "Kitao Body Collage/输入"
+    DESCRIPTION = "从 ComfyUI Shared Input 选择或上传图片。"
+
+    def load(self, image):
+        import folder_paths
+        return KBLLoadImage().load(folder_paths.get_annotated_filepath(image))
+
+    @classmethod
+    def IS_CHANGED(cls, image):
+        import folder_paths
+        return folder_paths.get_annotated_filepath(image)
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, image):
+        import folder_paths
+        return True if folder_paths.exists_annotated_filepath(image) else f"Invalid image file: {image}"
+
+NODE_CLASS_MAPPINGS = {"KBL_Load_Image": KBLLoadImage, "KBL_Load_Image_Picker": KBLLoadImagePicker}
+NODE_DISPLAY_NAME_MAPPINGS = {"KBL_Load_Image": "KBL 加载图片", "KBL_Load_Image_Picker": "KBL 选择图片"}

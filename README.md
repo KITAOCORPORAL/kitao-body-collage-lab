@@ -1,12 +1,13 @@
 # Kitao Body Collage Lab
 
-Photographic body and element decomposition toolkit for ComfyUI.
+One-click photographic body and scene-element decomposition toolkit for ComfyUI.
 
 ## What it does
 
 ```text
 Image
-→ Element Detection
+→ Florence-2 Scene Inventory
+→ Universal Element Segmentation
 → Person Segmentation
 → Pose Estimation
 → Body Part Split
@@ -18,7 +19,7 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
 
 ## Current version
 
-`0.1.0` — stable release baseline. Manifest schema: `0.1`.
+`0.1.1` — one-click all-elements release. Manifest schema remains `0.1`.
 
 ## Quick Start
 
@@ -30,13 +31,13 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
 
 2. Restart ComfyUI completely.
 
-3. Load:
+3. Load the simple two-node workflow:
 
    ```text
-   workflows/Kitao_Body_Collage_Lab_v0.1_full_export.json
+   workflows/Kitao_Body_Collage_Lab_v0.1.1_ONE_CLICK_ALL_ELEMENTS.json
    ```
 
-4. Select a local photograph in `KBL Load Image`.
+4. Click `KBL 选择图片` and choose or upload a photograph from ComfyUI Input.
 
 5. Run the workflow.
 
@@ -55,6 +56,10 @@ python scripts\kbl_doctor.py
 ## Main nodes
 
 - `KBL Load Image`
+- `KBL Load Image Picker`
+- `KBL Scene Inventory`
+- `KBL Universal Element Detector`
+- `KBL One-Click Decompose Export`
 - `KBL Element Detector`
 - `KBL Pose Estimator`
 - `KBL Body Splitter`
@@ -81,8 +86,9 @@ project = load_kbl_project(r"N:\ComfyUI\output\Kitao_Body_Collage_Lab\MY_PROJECT
 
 ## Models
 
-| Component | Purpose | v0.1.0 status |
+| Component | Purpose | v0.1.1 status |
 | --- | --- | --- |
+| Florence-2 base-ft | prompt-free scene inventory and region proposals | required; pinned Microsoft revision, local-only |
 | GroundingDINO | text-guided detection | required |
 | SAM2 | person and object segmentation | required |
 | DWPose | body, hand, and foot keypoints | required; CPU fallback supported |
@@ -92,9 +98,10 @@ Models stay outside this repository under `N:\Comfy-Desktop\ComfyUI-Shared\model
 
 ## Known limitations
 
-- `guided` is the stable default; `auto` and `hybrid` remain experimental.
+- One-click mode finds meaningful object-level layers; it does not promise pixel fragmentation or perfect recall of every tiny prop.
+- The legacy `guided` workflow remains supported; its `auto` and `hybrid` modes remain experimental.
 - BiRefNet is optional and is not required for safe/soft refinement.
-- Advanced multi-person body splitting is not supported in v0.1.0.
+- Multiple people are exported as generic person layers, while body splitting selects the largest person only.
 - Severe occlusion or cropped limbs can be reported as missing, uncertain, or partial; KBL does not invent hidden anatomy.
 
 ## Documentation
