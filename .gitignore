@@ -1,0 +1,74 @@
+# Python / environments
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Model weights and caches
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.bin
+models/
+model_cache/
+.cache/
+cache/
+
+# Source photography and generated outputs
+input/
+inputs/
+output/
+outputs/
+validation/
+validation*/
+validation_stage_*/
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.webp
+*.WEBP
+*.tif
+*.tiff
+*.TIF
+*.TIFF
+*.raw
+*.RAW
+*.arw
+*.ARW
+*.cr2
+*.CR2
+*.cr3
+*.CR3
+*.nef
+*.NEF
+
+# Temporary and diagnostic files
+temp/
+tmp/
+*.tmp
+*.log
+*.bak
+*.old
+*.kbl_tmp
+*.kbl_tmp*
+
+# Secrets and local credentials
+.env
+.env.*
+secrets.*
+credentials.*

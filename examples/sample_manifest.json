@@ -1,0 +1,29 @@
+{
+  "manifest_version": "0.1",
+  "pipeline_version": "0.1",
+  "project_name": "sample_project",
+  "created_at": "2026-08-14T00:00:00+00:00",
+  "source": {
+    "filename": "original.jpg",
+    "source_path": "N:\\input\\original.jpg",
+    "copied_source_path": "source/original.jpg",
+    "sha256": ""
+  },
+  "image": {"width": 1080, "height": 1440, "format": "JPEG", "orientation": 1, "color_mode": "RGB"},
+  "elements": [],
+  "body_parts": [
+    {
+      "id": "body_left_forearm", "label": "left_forearm", "category": "body",
+      "file": "body/body_left_forearm.png", "raw_mask_file": "masks/raw/body_left_forearm.png",
+      "refined_mask_file": "masks/refined/body_left_forearm.png", "alpha_mask_file": "masks/alpha/body_left_forearm.png",
+      "original_bbox": [496, 729, 551, 835], "content_bbox": [495, 728, 552, 836],
+      "crop_bbox": [471, 704, 576, 860], "crop_origin": [471, 704],
+      "area": 2667, "confidence": 0.797, "pose_confidence": 0.797, "sam_score": 0.902,
+      "quality_flag": "ok", "source_person_id": "person_01",
+      "original_anchor": [500, 730], "local_anchor": [29, 26], "orientation_deg": 110.56,
+      "joint_start": [537, 728], "joint_end": [501, 825], "source": "dwpose+sam2"
+    }
+  ],
+  "diagnostics": {"models_rerun": false},
+  "export_complete": true
+}

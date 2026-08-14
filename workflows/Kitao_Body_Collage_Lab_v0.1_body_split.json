@@ -1,0 +1,121 @@
+{
+  "id": "kbl-v0.1-body-split",
+  "revision": 0,
+  "last_node_id": 8,
+  "last_link_id": 10,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "KBL_Load_Image",
+      "pos": [30, 240],
+      "size": [420, 90],
+      "flags": {}, "order": 0, "mode": 0,
+      "inputs": [{"name": "image_path", "type": "STRING", "widget": {"name": "image_path"}, "link": null}],
+      "outputs": [
+        {"name": "image", "type": "IMAGE", "slot_index": 0, "links": [1, 3, 6]},
+        {"name": "image_meta", "type": "STRING", "slot_index": 1, "links": null},
+        {"name": "source_path", "type": "STRING", "slot_index": 2, "links": null},
+        {"name": "width", "type": "INT", "slot_index": 3, "links": null},
+        {"name": "height", "type": "INT", "slot_index": 4, "links": null},
+        {"name": "filename", "type": "STRING", "slot_index": 5, "links": null}
+      ],
+      "properties": {"Node name for S&R": "KBL_Load_Image"},
+      "widgets_values": ["N:\\comfyui\\input\\2022_10_23_11_46_38_IMG_2227.JPG"],
+      "title": "1. KBL 加载摄影图片"
+    },
+    {
+      "id": 2,
+      "type": "KBL_Element_Detector",
+      "pos": [500, 80],
+      "size": [460, 410],
+      "flags": {}, "order": 1, "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": 1},
+        {"name": "detection_mode", "type": "COMBO", "widget": {"name": "detection_mode"}, "link": null},
+        {"name": "category_preset", "type": "COMBO", "widget": {"name": "category_preset"}, "link": null},
+        {"name": "text_prompt_override", "type": "STRING", "widget": {"name": "text_prompt_override"}, "link": null},
+        {"name": "confidence_threshold", "type": "FLOAT", "widget": {"name": "confidence_threshold"}, "link": null},
+        {"name": "max_detections", "type": "INT", "widget": {"name": "max_detections"}, "link": null},
+        {"name": "mask_iou_threshold", "type": "FLOAT", "widget": {"name": "mask_iou_threshold"}, "link": null},
+        {"name": "min_mask_area", "type": "INT", "widget": {"name": "min_mask_area"}, "link": null},
+        {"name": "max_candidates", "type": "INT", "widget": {"name": "max_candidates"}, "link": null}
+      ],
+      "outputs": [
+        {"name": "elements", "type": "KBL_ELEMENTS", "slot_index": 0, "links": [2, 5]},
+        {"name": "candidate_masks", "type": "MASK", "slot_index": 1, "links": null},
+        {"name": "boxes", "type": "STRING", "slot_index": 2, "links": null},
+        {"name": "labels", "type": "STRING", "slot_index": 3, "links": null},
+        {"name": "scores", "type": "STRING", "slot_index": 4, "links": null},
+        {"name": "element_preview", "type": "IMAGE", "slot_index": 5, "links": null},
+        {"name": "mask_preview", "type": "IMAGE", "slot_index": 6, "links": null}
+      ],
+      "properties": {"Node name for S&R": "KBL_Element_Detector"},
+      "widgets_values": ["guided", "portrait_basic", "person.", 0.25, 10, 0.85, 256, 16],
+      "title": "2. GroundingDINO + SAM2 人物分割"
+    },
+    {
+      "id": 3,
+      "type": "KBL_Pose_Estimator",
+      "pos": [1020, 80],
+      "size": [400, 210],
+      "flags": {}, "order": 2, "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": 3},
+        {"name": "person_elements", "type": "KBL_ELEMENTS", "link": 2},
+        {"name": "person_selector", "type": "COMBO", "widget": {"name": "person_selector"}, "link": null},
+        {"name": "person_index", "type": "INT", "widget": {"name": "person_index"}, "link": null},
+        {"name": "confidence_threshold", "type": "FLOAT", "widget": {"name": "confidence_threshold"}, "link": null}
+      ],
+      "outputs": [
+        {"name": "pose_data", "type": "KBL_POSE", "slot_index": 0, "links": [4]},
+        {"name": "pose_preview", "type": "IMAGE", "slot_index": 1, "links": [7]},
+        {"name": "selected_person", "type": "KBL_ELEMENTS", "slot_index": 2, "links": null}
+      ],
+      "properties": {"Node name for S&R": "KBL_Pose_Estimator"},
+      "widgets_values": ["largest", 0, 0.3],
+      "title": "3. KBL 人体姿态识别"
+    },
+    {
+      "id": 4,
+      "type": "KBL_Body_Splitter",
+      "pos": [1480, 80],
+      "size": [470, 500],
+      "flags": {}, "order": 3, "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": 6},
+        {"name": "elements", "type": "KBL_ELEMENTS", "link": 5},
+        {"name": "pose_data", "type": "KBL_POSE", "link": 4},
+        {"name": "split_detail_level", "type": "COMBO", "widget": {"name": "split_detail_level"}, "link": null},
+        {"name": "joint_confidence_threshold", "type": "FLOAT", "widget": {"name": "joint_confidence_threshold"}, "link": null},
+        {"name": "sam_refine_parts", "type": "BOOLEAN", "widget": {"name": "sam_refine_parts"}, "link": null},
+        {"name": "resolve_overlap", "type": "BOOLEAN", "widget": {"name": "resolve_overlap"}, "link": null},
+        {"name": "include_head", "type": "BOOLEAN", "widget": {"name": "include_head"}, "link": null},
+        {"name": "include_hands", "type": "BOOLEAN", "widget": {"name": "include_hands"}, "link": null},
+        {"name": "include_feet", "type": "BOOLEAN", "widget": {"name": "include_feet"}, "link": null},
+        {"name": "include_face", "type": "BOOLEAN", "widget": {"name": "include_face"}, "link": null},
+        {"name": "include_hair", "type": "BOOLEAN", "widget": {"name": "include_hair"}, "link": null}
+      ],
+      "outputs": [
+        {"name": "body_parts", "type": "KBL_BODY_PARTS", "slot_index": 0, "links": null},
+        {"name": "body_part_masks", "type": "MASK", "slot_index": 1, "links": null},
+        {"name": "diagnostics", "type": "STRING", "slot_index": 2, "links": null},
+        {"name": "body_preview", "type": "IMAGE", "slot_index": 3, "links": [8]},
+        {"name": "body_mask_sheet", "type": "IMAGE", "slot_index": 4, "links": [9]},
+        {"name": "exploded_preview", "type": "IMAGE", "slot_index": 5, "links": [10]}
+      ],
+      "properties": {"Node name for S&R": "KBL_Body_Splitter"},
+      "widgets_values": ["standard", 0.3, true, true, true, true, true, false, false],
+      "title": "4. KBL 人体部位拆分"
+    },
+    {"id": 5, "type": "PreviewImage", "pos": [1020, 650], "size": [400, 340], "flags": {}, "order": 4, "mode": 0, "inputs": [{"name": "images", "type": "IMAGE", "link": 7}], "outputs": [], "properties": {"Node name for S&R": "PreviewImage"}, "widgets_values": [], "title": "Pose Preview"},
+    {"id": 6, "type": "PreviewImage", "pos": [1460, 650], "size": [400, 340], "flags": {}, "order": 5, "mode": 0, "inputs": [{"name": "images", "type": "IMAGE", "link": 8}], "outputs": [], "properties": {"Node name for S&R": "PreviewImage"}, "widgets_values": [], "title": "Body Parts Preview"},
+    {"id": 7, "type": "PreviewImage", "pos": [1900, 650], "size": [400, 340], "flags": {}, "order": 6, "mode": 0, "inputs": [{"name": "images", "type": "IMAGE", "link": 9}], "outputs": [], "properties": {"Node name for S&R": "PreviewImage"}, "widgets_values": [], "title": "Body Mask Sheet"},
+    {"id": 8, "type": "PreviewImage", "pos": [2340, 650], "size": [400, 340], "flags": {}, "order": 7, "mode": 0, "inputs": [{"name": "images", "type": "IMAGE", "link": 10}], "outputs": [], "properties": {"Node name for S&R": "PreviewImage"}, "widgets_values": [], "title": "Exploded Debug Preview"}
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "IMAGE"], [2, 2, 0, 3, 1, "KBL_ELEMENTS"], [3, 1, 0, 3, 0, "IMAGE"],
+    [4, 3, 0, 4, 2, "KBL_POSE"], [5, 2, 0, 4, 1, "KBL_ELEMENTS"], [6, 1, 0, 4, 0, "IMAGE"],
+    [7, 3, 1, 5, 0, "IMAGE"], [8, 4, 3, 6, 0, "IMAGE"], [9, 4, 4, 7, 0, "IMAGE"], [10, 4, 5, 8, 0, "IMAGE"]
+  ],
+  "groups": [], "config": {}, "extra": {"ds": {"scale": 0.72, "offset": [60, 80]}}, "version": 0.4
+}

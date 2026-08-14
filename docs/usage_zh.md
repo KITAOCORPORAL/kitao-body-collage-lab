@@ -1,0 +1,48 @@
+# 使用说明
+
+## 元素检测工作流
+
+加载 `workflows/Kitao_Body_Collage_Lab_v0.1_element_detection.json`，在 `KBL 加载图片` 填写 JPG/JPEG/PNG/WEBP 绝对路径。
+
+`KBL 元素检测与分割` 提供三种模式，v0.1 默认 `guided`：
+
+- `guided`：GroundingDINO 文本检测 bbox，再由 SAM2 切分。
+- `auto`：SAM2 使用规则点网格提出候选 mask，不加载 GroundingDINO。
+- `hybrid`：合并两类结果并按 IoU、面积和同类包含关系去重。
+
+真实验收发现 auto/hybrid 能稳定执行和去重，但点网格仍可能提出大面积背景 mask；因此把稳定的文本指定元素抠图设为默认，auto/hybrid 保留为实验选项。
+
+默认 `mixed_scene` 预设。使用 `custom` 时，`text_prompt_override` 必须填写；支持逗号、句号、分号或换行分隔，内部会规范成 GroundingDINO 推荐的点号短语格式。
+
+输出 `candidate_masks` 保持 `[N,H,W]` 独立批次，不合并。`elements` 是阶段 C 使用的 `KBL_ELEMENTS` 对象，逐项保留 id、label、mask、bbox、confidence、sam_score、area 和 source。
+
+## 人体姿态与部位拆分
+
+加载 `workflows/Kitao_Body_Collage_Lab_v0.1_body_split.json`。主链路为：加载图片 → 元素检测与分割 → 人体姿态识别 → 人体部位拆分 → 三类预览。
+
+`KBL 人体姿态识别` 只从 `KBL_ELEMENTS` 选择 `label == person` 的对象，支持 `largest`、`center` 和 `index`。DWPose 内部可缩放推理，但 keypoint、bbox 与预览均恢复到原图坐标。
+
+`standard` 输出 head、torso、左右 upper arm/forearm/hand/thigh/calf/foot；`basic` 合并为左右 arm/leg；`fine` 当前等同 standard，face/hair 参数只作为实验接口。每个有效部位保存原尺寸 mask、bbox、anchor、original_anchor、quality；四肢同时保存 joint_start、joint_end 与 orientation_deg。
+
+部位候选由动态关节走廊、手/足关键点云、主动 torso/head 区域与人物 mask 共同构成。启用 `sam_refine_parts` 时，同一个 SAM2 实例批量处理所有 ROI；结果仍与候选及人物 mask 相交。不可见或置信度不足的部位写入 `missing_parts`，不生成假 mask。
+
+真实命令行验证：
+
+```powershell
+& 'N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\.venv\Scripts\python.exe' scripts\smoke_test_body_split.py --image 'N:\comfyui\input\your_photo.jpg'
+```
+
+## Mask 精修与素材包导出
+
+加载 `workflows/Kitao_Body_Collage_Lab_v0.1_full_export.json`。`safe` 清理小孔、小岛并执行有限 closing/expand；单个 mask 若相对面积漂移超过 20%，自动撤销 expand。`soft` 保留同一 binary mask，只在边界 band 生成 0–1 alpha。raw mask 永远保留，body binary/alpha 永远受原 person mask 约束。
+
+Exporter 默认 `all + cropped + padding 24 + version`。每个对象逐一裁切、写 RGBA 后释放临时图像，不会同时构造全部 full-canvas RGBA。项目内部路径写为相对路径，cropped 素材保存 `crop_origin`、`original_anchor` 与 `local_anchor`。Exporter 不加载 GroundingDINO、SAM2 或 DWPose。
+
+完整真实验收：
+
+```powershell
+& 'N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\.venv\Scripts\python.exe' scripts\smoke_test_export.py --image 'N:\comfyui\input\your_photo.jpg'
+& 'N:\comfyui\ComfyUI-Installs\ComfyUI\ComfyUI\.venv\Scripts\python.exe' scripts\validate_manifest.py 'N:\ComfyUI\output\Kitao_Body_Collage_Lab\PROJECT\manifest.json'
+```
+
+项目先写入同盘隐藏 `.kbl_tmp` 目录，所有 PNG、mask、preview 和 Manifest validator 通过后才改名为正式项目。`replace` 也先备份旧项目，失败时恢复；默认 `version` 不覆盖旧结果。
