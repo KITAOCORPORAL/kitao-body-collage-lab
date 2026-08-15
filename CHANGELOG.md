@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.2
+
+### Added
+
+- Explicit `object_clean` and `collage_parts` output modes for the one-click node
+- `semantic_only`, `semantic_plus_dense`, and `semantic_plus_regions` inventory strategies
+- Whole-object scoring, person parent-child suppression, background-like rejection, and fragment filtering
+- Separate Clean Objects and Collage Parts one-click workflows
+- Stage-F diagnostics for background-like, fragment, and parent-child rejection counts
+
+### Changed
+
+- Clean Objects is now the recommended default and uses OD-first semantic inventory without region proposals
+- One-click exposes only image, project name, output mode, padding, and export root
+- Manifest 0.1 remains compatible; optional per-element quality scores are additive
+
 ## 0.1.1
 
 ### Added

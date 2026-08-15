@@ -1,16 +1,16 @@
 # KBL Current Status
 
 Current version:
-v0.1.1
+v0.1.2
 
 Current stage:
-Stage F — PASS
+Stage F — One-Click Clean Objects PASS
 
 Release baseline:
-v0.1.1
+v0.1.2
 
 Current goal:
-One-click ComfyUI all-elements decomposition workflow
+One-click whole-object decomposition with separate clean-object and collage-parts modes
 
 Pipeline:
 Florence-2 Scene Inventory

@@ -19,7 +19,7 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
 
 ## Current version
 
-`0.1.1` — one-click all-elements release. Manifest schema remains `0.1`.
+`0.1.2` — One-Click Clean Objects release. Manifest schema remains `0.1`.
 
 ## Quick Start
 
@@ -34,7 +34,7 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
 3. Load the simple two-node workflow:
 
    ```text
-   workflows/Kitao_Body_Collage_Lab_v0.1.1_ONE_CLICK_ALL_ELEMENTS.json
+   workflows/Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_CLEAN_OBJECTS.json
    ```
 
 4. Click `KBL 选择图片` and choose or upload a photograph from ComfyUI Input.
@@ -46,6 +46,11 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
    ```text
    N:\ComfyUI\output\Kitao_Body_Collage_Lab\
    ```
+
+The default `object_clean` mode exports whole people and whole semantic objects. It suppresses
+hair/body sub-elements, region proposals, background-shaped masks, and broken fragments. For
+material-mining and body-part layers, use
+`workflows/Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_COLLAGE_PARTS.json` instead.
 
 Run the release-readiness check at any time:
 
@@ -86,7 +91,7 @@ project = load_kbl_project(r"N:\ComfyUI\output\Kitao_Body_Collage_Lab\MY_PROJECT
 
 ## Models
 
-| Component | Purpose | v0.1.1 status |
+| Component | Purpose | v0.1.2 status |
 | --- | --- | --- |
 | Florence-2 base-ft | prompt-free scene inventory and region proposals | required; pinned Microsoft revision, local-only |
 | GroundingDINO | text-guided detection | required |
@@ -98,7 +103,8 @@ Models stay outside this repository under `N:\Comfy-Desktop\ComfyUI-Shared\model
 
 ## Known limitations
 
-- One-click mode finds meaningful object-level layers; it does not promise pixel fragmentation or perfect recall of every tiny prop.
+- `object_clean` intentionally prefers a clean false negative over a background-shaped false object.
+- Whole-object quality still depends on Florence-2 locating a coherent semantic object and SAM2 producing a coherent mask.
 - The legacy `guided` workflow remains supported; its `auto` and `hybrid` modes remain experimental.
 - BiRefNet is optional and is not required for safe/soft refinement.
 - Multiple people are exported as generic person layers, while body splitting selects the largest person only.

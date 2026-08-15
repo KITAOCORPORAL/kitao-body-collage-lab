@@ -221,7 +221,10 @@ def _write_asset(source, temp_root, kind, item, refined, crop_mode, padding, sav
         "joint_start":item.get("joint_start"),"joint_end":item.get("joint_end"),"source":item.get("source","unknown"),
     }
     if kind=="element":
-        record.update({key:item.get(key) for key in ("raw_label","canonical_label","discovery_source","semantic") if key in item})
+        record.update({key:item.get(key) for key in (
+            "raw_label", "canonical_label", "discovery_source", "semantic",
+            "fragment_score", "whole_object_score",
+        ) if key in item})
         record["mask"]=record["raw_mask_file"]; record["bbox"]=record["original_bbox"]
         record["original_position"]=[(record["original_bbox"][0]+record["original_bbox"][2])/2,(record["original_bbox"][1]+record["original_bbox"][3])/2]
     return record

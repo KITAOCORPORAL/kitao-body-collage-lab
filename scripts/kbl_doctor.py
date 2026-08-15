@@ -1,4 +1,4 @@
-"""Unified release-readiness checks for KBL v0.1.1."""
+"""Unified release-readiness checks for the current KBL release."""
 
 import argparse
 import json

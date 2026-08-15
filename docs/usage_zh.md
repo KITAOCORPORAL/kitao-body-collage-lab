@@ -8,6 +8,8 @@
 
 输出项目位于 `N:\ComfyUI\output\Kitao_Body_Collage_Lab\`，包含透明 RGBA、原始/精修/alpha mask、`scene_inventory_preview.png`、Contact Sheet、Exploded View、Manifest 0.1 和 `pipeline_diagnostics.json`。PNG 的有效 RGB 直接来自源照片，只修改 alpha，不生成或重画对象。
 
+v0.1.2 默认使用 `Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_CLEAN_OBJECTS.json`。`object_clean` 只导出完整人物与可信语义对象；人物存在时不单独导出 hair 或身体局部，并拒绝大块背景与残片。需要人物部位、匿名区域和素材挖矿时，改用 `Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_COLLAGE_PARTS.json`。
+
 质量模式：
 
 - `fast`：Florence OD → SAM2 → Export，不拆身体部位。
