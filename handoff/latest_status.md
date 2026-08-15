@@ -33,8 +33,8 @@ Known issues:
 - Complex scenes may miss small or heavily occluded props
 - Body Split selects the largest person only
 
-Next after v0.1.1:
-Real-world user testing and segmentation quality tuning
+Next:
+v0.1.3 whole-object recall tuning
 
 Latest report:
-`handoff/reports/回传给GPT_Kitao_Body_Collage_Lab_v0.1.1_StageF_一键全元素拆解报告.md`
+`handoff/reports/回传给GPT_Kitao_Body_Collage_Lab_v0.1.2_完整元素模式修复报告.md`

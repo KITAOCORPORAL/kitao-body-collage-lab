@@ -1,5 +1,5 @@
 {
-  "id":"kbl-v0.1.2-one-click-collage-parts","revision":0,"last_node_id":3,"last_link_id":3,
+  "id":"5a73346e-68d8-42d5-8305-dbfb0ff9b1ee","revision":0,"last_node_id":3,"last_link_id":3,
   "nodes":[
     {"id":1,"type":"KBL_Load_Image_Picker","pos":[80,180],"size":[360,160],"flags":{},"order":0,"mode":0,
      "inputs":[{"name":"image","type":"COMBO","widget":{"name":"image"},"link":null}],
