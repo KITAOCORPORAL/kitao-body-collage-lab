@@ -29,19 +29,42 @@ KBL keeps the source photograph's pixels. It exports masks, cropped transparent 
    .\scripts\install_models.ps1
    ```
 
-2. Restart ComfyUI completely.
+2. Install the release workflows into the current ComfyUI user library:
 
-3. Load the simple two-node workflow:
+   ```powershell
+   .\scripts\install_workflows.ps1
+   ```
+
+3. Restart ComfyUI completely.
+
+4. Open the recommended workflow using either method:
+
+   **A. Installed ComfyUI Workflows entry (recommended)**
+
+   ```text
+   Workflows
+   └─ Kitao_Body_Collage_Lab
+      └─ Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_CLEAN_OBJECTS
+   ```
+
+   The material-mining alternative appears beside it as
+   `Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_COLLAGE_PARTS`.
+
+   **B. Manual Load from the repository**
 
    ```text
    workflows/Kitao_Body_Collage_Lab_v0.1.2_ONE_CLICK_CLEAN_OBJECTS.json
    ```
 
-4. Click `KBL 选择图片` and choose or upload a photograph from ComfyUI Input.
+   The repository `workflows` directory is not the ComfyUI user Workflows directory. Committing a
+   JSON file to the repository does not make it appear in the Workflows panel; run
+   `scripts\install_workflows.ps1` to deploy release workflows into the active user library.
 
-5. Run the workflow.
+5. Click `KBL 选择图片` and choose or upload a photograph from ComfyUI Input.
 
-6. Find the exported project under:
+6. Run the workflow.
+
+7. Find the exported project under:
 
    ```text
    N:\ComfyUI\output\Kitao_Body_Collage_Lab\
